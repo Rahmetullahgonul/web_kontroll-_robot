@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # CORS modülünü ekledik
 
 app = Flask(__name__)
+CORS(app)  # Tüm domainlerden gelen isteklere izin ver
+
 latest_command = None
 
 @app.route("/")
