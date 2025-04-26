@@ -1,44 +1,49 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+# -*- coding: utf-8 -*-
 
+from flask import Flask, request
 app = Flask(__name__)
-CORS(app)
 
-latest_command = None
-latest_status = {
-    "distance": None,
-    "light": None
-}
-
-@app.route("/")
-def home():
-    return "Robot API çalışıyor!"
+command = None
+status_data = {"distance": None, "light": None}
+vehicle_on = False  # <<< YENİ EKLENDİ
 
 @app.route("/set-command", methods=["POST"])
 def set_command():
-    global latest_command
+    global command
     data = request.get_json()
-    latest_command = data.get("command")
-    return jsonify({"status": "OK", "command": latest_command})
+    command = data.get("command")
+    return {"status": "ok"}
 
 @app.route("/get-command", methods=["GET"])
 def get_command():
-    global latest_command
-    cmd = latest_command
-    latest_command = None  # komut alındıktan sonra sıfırla
-    return jsonify({"command": cmd})
+    global command
+    cmd = command
+    command = None
+    return {"command": cmd}
 
 @app.route("/set-status", methods=["POST"])
 def set_status():
-    global latest_status
+    global status_data
     data = request.get_json()
-    latest_status["distance"] = data.get("distance")
-    latest_status["light"] = data.get("light")
-    return jsonify({"status": "OK", "data": latest_status})
+    status_data["distance"] = data.get("distance")
+    status_data["light"] = data.get("light")
+    return {"status": "ok"}
 
 @app.route("/status", methods=["GET"])
 def get_status():
-    return jsonify(latest_status)
+    return status_data
+
+# >>>> YENİ EKLENDİ
+@app.route("/set-vehicle-status", methods=["POST"])
+def set_vehicle_status():
+    global vehicle_on
+    data = request.get_json()
+    vehicle_on = data.get("vehicle_on", False)
+    return {"status": "ok", "vehicle_on": vehicle_on}
+
+@app.route("/get-vehicle-status", methods=["GET"])
+def get_vehicle_status():
+    return {"vehicle_on": vehicle_on}
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=5000)
