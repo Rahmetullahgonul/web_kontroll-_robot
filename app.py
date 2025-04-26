@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask_cors import CORS
 from flask import Flask, request
-from gtts import gTTS
-import pygame
-import io
-import threading
 
 app = Flask(__name__)
 CORS(app)
@@ -12,6 +8,7 @@ CORS(app)
 command = None
 status_data = {"distance": None, "light": None}
 vehicle_on = False
+speech_text = None  # <<< yeni eklendi
 
 @app.route("/set-command", methods=["POST"])
 def set_command():
@@ -50,34 +47,20 @@ def set_vehicle_status():
 def get_vehicle_status():
     return {"vehicle_on": vehicle_on}
 
-# >>> Text-to-Speech için yeni eklenen endpoint
-@app.route("/speak", methods=["POST"])
-def speak():
+# <<< Text-to-Speech için iki yeni endpoint
+@app.route("/set-speak", methods=["POST"])
+def set_speak():
+    global speech_text
     data = request.get_json()
-    text = data.get("text", "")
-
-    if not text.strip():
-        return {"status": "error", "message": "Empty text"}
-
-    threading.Thread(target=play_text_to_speech, args=(text,)).start()
+    speech_text = data.get("text", "")
     return {"status": "ok"}
 
-def play_text_to_speech(text):
-    try:
-        tts = gTTS(text=text, lang='tr')
-        mp3_fp = io.BytesIO()
-        tts.write_to_fp(mp3_fp)
-        mp3_fp.seek(0)
-
-        pygame.mixer.init()
-        pygame.mixer.music.load(mp3_fp, 'mp3')
-        pygame.mixer.music.play()
-
-        while pygame.mixer.music.get_busy():
-            continue
-
-    except Exception as e:
-        print("Text-to-Speech error:", e)
-
+@app.route("/get-speak", methods=["GET"])
+def get_speak():
+    global speech_text
+    text = speech_text
+    speech_text = None  # çekildikten sonra sıfırlıyoruz
+    return {"text": text if text else ""}
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
