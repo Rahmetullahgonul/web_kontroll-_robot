@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-
+from flask_cors import CORS
 from flask import Flask, request
+
 app = Flask(__name__)
+CORS(app)
 
 command = None
 status_data = {"distance": None, "light": None}
