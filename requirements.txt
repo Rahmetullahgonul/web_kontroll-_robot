@@ -1,2 +1,5 @@
-flask
+Flask
 flask_cors
+requests
+gTTS
+pygame
